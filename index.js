@@ -8,7 +8,7 @@ const categoryRouter = require("./router/category.routes");
 const messageRouter = require("./router/message.routes");
 const { app, server } = require("./lib/socket");
 require("dotenv").config();
-
+const serverless = require("serverless-http");
 // STATIC IMPORTS
 
 app.use(express.json());
@@ -28,3 +28,5 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log("Server is running on the " + PORT);
 });
+
+module.exports.handler = serverless(app);
