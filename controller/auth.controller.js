@@ -2,7 +2,7 @@ const authSchema = require("../schema/auth.schema");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const redis = require("../lib/redis");
-const cloudinary = require("../utils/cloudinary");
+const { cloudinary } = require("../utils/cloudinary");
 
 const generateTokens = (userId) => {
   const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
@@ -41,7 +41,7 @@ const setCookies = (res, accessToken, refreshToken) => {
 };
 
 const register = async (req, res) => {
-  const { password, username, location } = req.body;
+  const { password, username, location, phone_number } = req.body;
 
   try {
     const userExists = await authSchema.findOne({ username });
@@ -57,6 +57,8 @@ const register = async (req, res) => {
       username,
       password: hash,
       location,
+      phone_number,
+      role: "user",
     });
 
     // authenticate
@@ -77,9 +79,9 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    const foundedUser = await authSchema.findOne({ email });
+    const foundedUser = await authSchema.findOne({ username });
 
     if (!foundedUser) {
       return res.json({ error: "This user not found" });
@@ -176,6 +178,57 @@ const getOneUser = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    const { user_image, location, phone_number } = req.body;
+    const user_id = req.user?._id;
+
+    const user = await authSchema.findById(user_id);
+
+    const updatedData = {};
+
+    if (user_image) {
+      const cloudinary_res = await cloudinary.uploader.upload(user_image, {
+        folder: "uers",
+      });
+      updatedData.user_image = cloudinary_res.secure_url;
+    } else {
+      updatedData.user_image = user.user_image;
+    }
+
+    if (location) {
+      updatedData.location = location;
+    } else {
+      updatedData.location = user.location;
+    }
+
+    if (phone_number) {
+      updatedData.phone_number = phone_number;
+    } else {
+      updatedData.phone_number = user.phone_number;
+    }
+
+    const updatedUser = await authSchema.findByIdAndUpdate(
+      user_id,
+      updatedData,
+      { new: true }
+    );
+
+    res.json({ updatedUser });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const checkAuth = async (req, res) => {
+  try {
+    res.json(req.user);
+  } catch (error) {
+    console.log(error);
+    res.json(error);
+  }
+};
 // //////////// PROFILE
 
 module.exports = {
@@ -185,4 +238,6 @@ module.exports = {
   getProfile,
   refreshToken,
   getOneUser,
+  checkAuth,
+  updateProfile,
 };

@@ -1,4 +1,5 @@
 const authSchema = require("../schema/auth.schema");
+const categorySchema = require("../schema/category.schema");
 const productSchema = require("../schema/product.schema");
 const { cloudinary } = require("../utils/cloudinary");
 
@@ -96,6 +97,8 @@ const deleteProduct = async (req, res) => {
 const likeProduct = async (req, res) => {
   try {
     const { user_id, product_id } = req.body;
+    console.log({ user_id });
+
     const user = await authSchema.findOne({ _id: user_id });
     if (!user) {
       return res.json({ message: "Bu user mavjud emas" });
@@ -135,14 +138,34 @@ const likeProduct = async (req, res) => {
 
 const searchProduct = async (req, res) => {
   try {
-    const { key } = req.params;
-    const data = await productSchema.find({
-      $or: [
-        { product_name: { $regex: key } },
-        { description: { $regex: key } },
-      ],
-    });
-    return res.json({ data });
+    let { location, product } = req.body;
+
+    if (
+      location === "O'zbekiston" ||
+      location.toLowerCase("O'zbekiston") === "o'zbekiston"
+    ) {
+      location = "";
+    }
+    let query = {};
+
+    if (location) {
+      let lc = { $regex: location, $options: "i" };
+
+      query.location = lc;
+    }
+
+    const category = await categorySchema.findOne({ category_name: product });
+    if (category) {
+      let cat = { $regex: category?.category_name, $options: "i" };
+
+      query.category = cat;
+    } else if (product) {
+      let pr = { $regex: product, $options: "i" };
+      query.product_name = pr;
+    }
+
+    const searchedProducts = await productSchema.find(query);
+    return res.json({ searchedProducts });
   } catch (error) {
     console.log(error);
     res.json(error);
@@ -185,8 +208,15 @@ const getOneProduct = async (req, res) => {
 
 const getProductUser = async (req, res) => {
   try {
-    const { user_id } = req.params;
-    const user = await authSchema.findOne({ _id: user_id });
+    const { product_id } = req.params;
+    console.log(product_id);
+
+    const product = await productSchema.findOne({ _id: product_id });
+    if (!product) {
+      return res.json({ message: "Bu mahsulot topilmadi" });
+    }
+
+    const user = await authSchema.findOne({ _id: product.user_id });
     return res.json({ user });
   } catch (error) {
     console.log(error);
@@ -194,13 +224,19 @@ const getProductUser = async (req, res) => {
   }
 };
 
-// const getUserProducts = async (req, res) => {
-//   try {
-//   } catch (error) {
-//     console.log(error);
-//     res.json(error);
-//   }
-// };
+const getVipAdvert = async (req, res) => {
+  try {
+    const allProducts = await productSchema.find();
+    const products = allProducts.sort(
+      (a, b) => b.product_likes.length - a.product_likes.length
+    );
+
+    res.json({ products });
+  } catch (error) {
+    console.log(error);
+    res.json(error);
+  }
+};
 
 module.exports = {
   getUserProducts,
@@ -212,4 +248,5 @@ module.exports = {
   getCategoryProducts,
   getOneProduct,
   getProductUser,
+  getVipAdvert,
 };

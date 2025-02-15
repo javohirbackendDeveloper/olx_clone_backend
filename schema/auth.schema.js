@@ -14,9 +14,11 @@ const authSchema = new Schema(
 
     location: {
       type: String,
+      default: "O'zbekiston",
     },
     user_image: {
       type: String,
+      default: "",
     },
     phone_number: {
       type: String,
@@ -40,6 +42,13 @@ const authSchema = new Schema(
     user_talks: {
       type: Array,
       default: [],
+    },
+
+    role: {
+      type: String,
+      enum: {
+        values: ["user", "admin"],
+      },
     },
   },
   {

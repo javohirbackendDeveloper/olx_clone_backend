@@ -4,9 +4,10 @@ const cookieParser = require("cookie-parser");
 const mongoDB = require("./lib/config");
 const authRouter = require("./router/auth.routes");
 const productRouter = require("./router/product.routes");
+const categoryRouter = require("./router/category.routes");
+const messageRouter = require("./router/message.routes");
+const { app, server } = require("./lib/socket");
 require("dotenv").config();
-
-const app = express();
 
 // STATIC IMPORTS
 
@@ -19,9 +20,11 @@ mongoDB();
 
 app.use("/api/auth", authRouter);
 app.use("/api/product", productRouter);
+app.use("/api/category", categoryRouter);
+app.use("/api/messages", messageRouter);
 
 const PORT = process.env.PORT;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log("Server is running on the " + PORT);
 });
