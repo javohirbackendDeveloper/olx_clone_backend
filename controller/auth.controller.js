@@ -87,7 +87,10 @@ const login = async (req, res) => {
       return res.json({ error: "This user not found" });
     }
 
-    const checkerPassword = bcrypt.compare(password, foundedUser.password);
+    const checkerPassword = await bcrypt.compare(
+      password,
+      foundedUser.password
+    );
 
     if (!checkerPassword) {
       return res.json({ error: "Your password is wrong" });
