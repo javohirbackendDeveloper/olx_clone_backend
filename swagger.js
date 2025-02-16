@@ -1,8 +1,6 @@
-// swagger.js fayli
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 
-// Swagger sozlamalari
 const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
