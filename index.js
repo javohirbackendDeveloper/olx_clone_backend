@@ -9,17 +9,24 @@ const messageRouter = require("./router/message.routes");
 const { app, server } = require("./lib/socket");
 require("dotenv").config();
 const serverless = require("serverless-http");
+const { swaggerSpec, swaggerUi } = require("./swagger");
 // STATIC IMPORTS
 
 app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
+    origin: "http://localhost:5173" || "*",
     credentials: true,
   })
 );
 mongoDB();
 
+// {
+// credentials: true,
+// }
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // ROUTERS
 
 app.use("/api/auth", authRouter);
