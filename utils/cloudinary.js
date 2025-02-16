@@ -29,3 +29,11 @@ const uploadNewImage = async (imageUrl) => {
 };
 
 module.exports = { cloudinary, deleteOldImage, uploadNewImage };
+
+// VERCEL CONFIGURATION
+
+// {
+//   "version": 2,
+//   "builds": [{ "src": "index.js", "use": "@vercel/node" }],
+//   "routes": [{ "src": "/api/(.*)", "dest": "/api/$1.js" }]
+// }

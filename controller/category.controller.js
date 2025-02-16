@@ -6,28 +6,36 @@ const addCategory = async (req, res) => {
   try {
     const { user_id } = req.params;
     const { category_name, image } = req.body;
-    console.log(req.body);
 
     const user = await authSchema.findOne({ _id: user_id });
+
     if (user?.role === "admin") {
       const foundedCategory = await categorySchema.findOne({ category_name });
+
       if (foundedCategory) {
         return res.json({
           message:
             "Bu category nomi allaqachon mavjud iltimos boshqa nom tanlang",
         });
       }
+
       let cloudinary_response = null;
       if (image) {
         cloudinary_response = await cloudinary.uploader.upload(image, {
           folder: "category",
         });
       }
+
       const category = await categorySchema.create({
         category_name,
         image: cloudinary_response.secure_url || "",
       });
+
       res.json({ category });
+    } else {
+      return res.json({
+        message: "Siz admin emassiz faqat admin category qo'sha oladi",
+      });
     }
   } catch (error) {
     console.log(error);
