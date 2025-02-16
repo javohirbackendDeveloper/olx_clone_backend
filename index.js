@@ -13,7 +13,11 @@ const serverless = require("serverless-http");
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+  })
+);
 mongoDB();
 
 // ROUTERS
