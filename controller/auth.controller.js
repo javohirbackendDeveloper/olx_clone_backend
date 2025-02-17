@@ -112,16 +112,30 @@ const login = async (req, res) => {
 const logout = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
+
+    // Agar refresh token mavjud bo'lsa, uni Redis'dan o'chirish
     if (refreshToken) {
       const decoded = jwt.verify(
         refreshToken,
         process.env.REFRESH_TOKEN_SECRET
       );
+      // Redis'dan tokenni o'chirish
       await redis.del(`refresh_token:${decoded.userId}`);
     }
 
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    // Cookie'lardan accessToken va refreshToken'ni o'chirish
+    res.clearCookie("accessToken", {
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    });
+    res.clearCookie("refreshToken", {
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    // Foydalanuvchiga muvaffaqiyatli chiqish haqida xabar yuborish
     res.json({ message: "Logged out successfully" });
   } catch (error) {
     console.log("Error in logout controller", error.message);

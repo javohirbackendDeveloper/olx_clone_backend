@@ -22,10 +22,6 @@ app.use(
 );
 mongoDB();
 
-// {
-// credentials: true,
-// }
-
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // ROUTERS
 
